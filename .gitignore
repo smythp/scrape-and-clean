@@ -1,0 +1,7 @@
+*~
+*#
+*.dnc
+*.html
+*.htm
+.python-version
+test.sh
