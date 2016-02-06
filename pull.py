@@ -3,7 +3,7 @@ import requests
 from readability.readability import Document
 from bs4 import BeautifulSoup, SoupStrainer
 
-url = "http://www.wuxiaworld.com/issth-index/issth-book-1-chapter-11/"
+url = ""
 
 def get_html(url):
     r = requests.get(url)
