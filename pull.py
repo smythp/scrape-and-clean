@@ -4,7 +4,7 @@ import requests
 from readability.readability import Document
 from bs4 import BeautifulSoup, SoupStrainer
 
-url = "http://www.wuxiaworld.com/issth-index/issth-book-1-chapter-1/"
+url = ""
 
 def get_html(url):
     r = requests.get(url)
@@ -17,7 +17,13 @@ def write_readable_text_from_url(url,out_file):
     out_file.write("<!DOCTYPE html>\n<html><head><meta http-equiv=\"Content-Type\" content=\"text/html;charset=utf-8\" /></head>")
     out_file.write(readable_article[6:])
 
-
+def get_cleaned_html_from_url(url):
+    readable_article = Document(get_html(url)).summary()
+    readable_article = readable_article.replace(u"\u2018", "'").replace(u"\u2019", "'").replace(u"\u201c","\"").replace(u"\u201d", "\"")
+    string_out = "<!DOCTYPE html>\n<html><head><meta http-equiv=\"Content-Type\" content=\"text/html;charset=utf-8\" /></head>"
+    string_out += readable_article[6:]
+    return string_out
+    
 def get_all_links_from_html(html):    
     dom =  lxml.html.fromstring(html)
 
@@ -30,23 +36,21 @@ def parse_html(html):
 
 def find_link_matching_string(html,string):
     root = parse_html(html)
-    e = root.xpath('.//a[contains(text(),"Next")]')
+    e = root.xpath('.//a[contains(text(),"%s")]' % string)
+    e = e[0].get('href')
     return e
 
-    
-html = get_html(url)
-out = find_link_matching_string(html,"fly")
-print(out)
-for element in out:
-    print(element.get('href'))
+def follow_links_and_write_text(start_url,next_item_match_string,filename):
+    with open(filename,"w") as file:
+        html = get_cleaned_html_from_url(start_url)
+        file.write(html)
+        file.write('\n\n')
+        while 1:
+            out = find_link_matching_string(html,next_item_match_string)
+            print('Following link: ' + out)
+            html = get_cleaned_html_from_url(out)
+            file.write(html)
+            file.write('\n\n')        
 
 
-    
-        
-
-
-# try using this to match 
-# .//a[text()='Example']
-# or this tree.xpath(".//a[text()='Example']")[0].tag
-# from here 
-
+follow_links_and_write_text(url,"Next","supertest.html")
